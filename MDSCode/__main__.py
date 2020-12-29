@@ -4,4 +4,6 @@ from compiler import Compiler
 file_name = "code.mds"
 
 compiler = Compiler(file_name)
-print(compiler.compile())
+code = compiler.compile()
+print(code)
+# print("\n".join([f"{idx}. {line}" for idx, line in enumerate(code.split("\n"))]))
