@@ -2,22 +2,42 @@
 
 class FunctionLib:
     def __init__(self):
-        self.standard_functions = {
-            "printnow": "print printnow_par0 \nprintflush printnow_par1",
-            "print": "print print_par0",
-            "printflush": "printflush printflush_par0",
-            "write": "write write_par0 write_par1 write_par2",
-            "read": "read result read_par0 read_par1",
-            "sensor": "sensor result sensor_par0 sensor_par1"
-        }
-        self.custom_functions = {
-
+        self.functions = {
+            "printnow": "print <value> \nprintflush <target>",
+            "print": "print <value>",
+            "printflush": "printflush <target>",
+            "write": "write <value> <target> <location>",
+            "read": "read mdsc_return_value <target> <location>",
+            "sensor": "sensor mdsc_return_value <target> @<value>",
+            "opperation": "op <op> mdsc_return_value <value1> <value2>"
         }
 
-    def __getitem__(self, key):
-        if key in self.standard_functions:
-            fn = self.standard_functions[key]
-        elif key in self.custom_functions:
-            fn = self.custom_functions[key]
+    def build_function(self, function_name, *args, **kwargs):
+        function = self.functions[function_name]
 
-        return fn + "\n" + "set @counter return_addr"
+        for key in kwargs:
+            function = function.replace(f"<{key}>", kwargs[key])
+
+        parameters = []
+        new_par = ""
+        adding_to_par = False
+        for char in function:
+            if char == "<":
+                adding_to_par = True
+                continue
+            elif char == ">":
+                adding_to_par = False
+                parameters.append(new_par)
+                new_par = ""
+
+            if adding_to_par:
+                new_par += char
+
+        for idx, arg in enumerate(args):
+            function = function.replace(f"<{parameters[idx]}>", str(arg))
+
+        # if return value not set in function
+        if "mdsc_return_value" not in function:
+            function = f"set mdsc_return_value null\n{function}"
+
+        return function

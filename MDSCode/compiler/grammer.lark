@@ -1,0 +1,92 @@
+COMMENT: "//" /[^\n]/*
+LINE_SEPERATOR: ";"
+NEW_LINE: "\n"
+%ignore COMMENT
+%ignore NEW_LINE
+%import common.WS // WhiteSpace
+%ignore WS
+
+letter: "A".."Z" | "a".."z"
+digit: "0".."9"
+UNDERSCORE: "_"
+
+// opperators
+PLUS: "+"
+MINUS: "-"
+DIVIDE: "/"
+DIVIDE_FLOOR: "//"
+MULTIPLY: "*"
+TO_POWER: "*"
+DIVIDE_REST: "%"
+opperator: PLUS | MINUS | DIVIDE | DIVIDE_FLOOR | MULTIPLY | TO_POWER | DIVIDE_REST
+
+// EVALUTAIONS
+GREATER_THAN: ">"
+SMALLER_THAN: "<"
+EQUAL: "=="
+GREATER_THAN_OR_EQUAL: ">="
+SMALLER_THAN_OR_EQUAL: "<="
+NOT_EQUAL: "!="
+eval: GREATER_THAN | SMALLER_THAN | EQUAL | GREATER_THAN_OR_EQUAL | SMALLER_THAN_OR_EQUAL | NOT_EQUAL
+
+// GATES
+AND_GATE: "and"
+OR_GATE: "or"
+XOR_GATE: "^"
+gate: AND_GATE | OR_GATE | XOR_GATE
+
+// DATA TYPES
+// numbers
+int: [ "-" ] digit+
+float: [ "-" ] digit+ "." digit+
+number: int | float
+
+// string
+%import common.ESCAPED_STRING   -> STRING
+
+// variable
+variable_character: letter | digit | UNDERSCORE
+variable: ("_" | letter) variable_character*
+
+value: int | float | variable | STRING
+obj: value | return_obj
+
+// evaluation
+evaluation: [ "(" ] obj eval obj [ ")" ] | evaluation gate evaluation
+
+// opperation
+opperation: [ "(" ] obj opperator obj [ ")" ]
+
+// return
+return_obj: (value | evaluation | opperation | class_variable_call | class_function_call | function_call)
+return: "return" return_obj
+
+// set
+set: variable "=" return_obj
+
+// code
+line: 
+       | set LINE_SEPERATOR
+       | game_obj_def LINE_SEPERATOR
+       | function_call LINE_SEPERATOR
+       | function_def [ LINE_SEPERATOR ]
+       | class_function_call LINE_SEPERATOR
+       | class_variable_call LINE_SEPERATOR
+       | return LINE_SEPERATOR
+code: line+
+
+code_block: "{" code "}"
+
+// functions
+parameter_list: (return_obj ("," return_obj)*)?
+function_def: "fn" variable "(" parameter_list ")" code_block
+function_call: variable "(" parameter_list ")"
+
+// classes
+class_function_call: variable "." function_call
+class_variable_call: variable "." variable
+
+// game obj
+game_obj_def: "%DEFINE" set
+
+start: code
