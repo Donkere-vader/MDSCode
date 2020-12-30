@@ -2,6 +2,10 @@ from compiler import Compiler
 import sys
 
 
+__author__ = "donkere-vader"
+__version__ = "beta"
+
+
 class InvalidCommand(Exception):
     pass
 

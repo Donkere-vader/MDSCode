@@ -125,6 +125,7 @@ class Compiler:
             elif line_action.data == 'class_function_call':
                 pc, c = self.compile_return_obj(line_action)
                 new_code = pc + new_code
+            # var = <something>;
             elif line_action.data == 'set':
                 var_name = line_action.children[0]
                 pc, c = self.compile_return_obj(line_action.children[1])

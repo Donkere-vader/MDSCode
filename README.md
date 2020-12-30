@@ -1,9 +1,15 @@
 # MDSCode
 A compiler from simple code to mindustry code
 
+## Disclaimer
+This project is still in development and far from finished. So if you really need all the functionallity of mindustry this won't cut it yet.
 
 ## Getting started
 The file extension of code files should be '.mdsc' (short for mindustry code)
+
+Each line should end with a ; (Comming in languages as Java, JS, CSS, C, C# and the list goes on)
+
+from // and further the line is a comment so everything after // to the end of the line is ignored
 
 ### Defining
 At the top of your script define all the blocks for easy acces and changing in the future:
