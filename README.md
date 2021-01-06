@@ -26,6 +26,8 @@ var = 1;
 one_plus_two = 1 + 2;
 ```
 
+!! Warning. Please don't use variables starting with ``mdsc_`` those are reserved for the compiler.
+
 ### Print
 Printing is a function of the "class" msg_block.
 ```
@@ -57,3 +59,9 @@ Comming soon
 
 ### If statements
 Comming soon
+
+### Native Mindsutry code
+If you for some reason especially need to write in standard mindustry code you can by calling the ``exec`` function.
+```
+exec("set x 10"); // will set the variable x to the value 10
+```

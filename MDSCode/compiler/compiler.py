@@ -34,8 +34,6 @@ class Compiler:
             parameter_list_obj = function_call.children[1]
             parameter_list = []
 
-            # p.children[0] for p in parameter_list_obj.children
-
             for p in parameter_list_obj.children:
                 num += 1
                 pc, c = self.compile_return_obj(p.children[0], num=num)
@@ -62,6 +60,33 @@ class Compiler:
                 value=tree.children[1]
             ))
 
+            parameter_calculations.append(
+                f"set mdsc_return_value{num} mdsc_return_value"
+            )
+            code = f"mdsc_return_value{num}"
+        elif tree.data == "function_call":
+            # get function information
+            function_call = tree
+            function_name = function_call.children[0]
+
+            parameter_list_obj = function_call.children[1]
+            parameter_list = []
+
+            for p in parameter_list_obj.children:
+                num += 1
+                pc, c = self.compile_return_obj(p.children[0], num=num)
+                parameter_calculations.append(pc)
+                parameter_list.append(c)
+
+            if function_name == "exec":
+                for char in ["'", '"']:
+                    if parameter_list[0].startswith('"'):
+                        parameter_list[0] = parameter_list[0][1:][:-1]
+
+            parameter_calculations.append(self.function_lib.build_function(
+                function_name,
+                *parameter_list
+            ))
             parameter_calculations.append(
                 f"set mdsc_return_value{num} mdsc_return_value"
             )
@@ -130,6 +155,9 @@ class Compiler:
                 var_name = line_action.children[0]
                 pc, c = self.compile_return_obj(line_action.children[1])
                 new_code = pc + new_code + f"\nset {var_name} {c}\n"
+            elif line_action.data == "function_call":
+                pc, c = self.compile_return_obj(line_action)
+                new_code = new_code + pc
 
             code += new_code
 

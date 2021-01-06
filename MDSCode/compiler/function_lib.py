@@ -9,7 +9,8 @@ class FunctionLib:
             "write": "write <value> <target> <location>",
             "read": "read mdsc_return_value <target> <location>",
             "sensor": "sensor mdsc_return_value <target> @<value>",
-            "opperation": "op <op> mdsc_return_value <value1> <value2>"
+            "opperation": "op <op> mdsc_return_value <value1> <value2>",
+            "exec": "<code>"
         }
 
     def build_function(self, function_name, *args, **kwargs):
