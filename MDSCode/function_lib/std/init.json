@@ -1,0 +1,8 @@
+{
+    "module_name":  "std",
+    "description": "Standard module, with the standard mindustry code",
+    "type": "machinecode",
+    "files": [
+        "std"
+    ]
+}

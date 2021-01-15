@@ -1,0 +1,118 @@
+{
+    "classes": {
+        "block": {
+            "functions": {}
+        },
+        "message:block": {
+            "functions": {
+                "print": {
+                    "type": "forward",
+                    "function": "printnow",
+                    "parameters": ["text"],
+                    "pass_parameters": {
+                        "text": "$text",
+                        "target": "self"
+                    }
+                },
+                "printflush": {
+                    "type": "forward",
+                    "function": "printflush",
+                    "parameters": [],
+                    "pass_parameters": {
+                        "target":  "self"
+                    }
+                }
+            }
+        },
+        "cell:block": {
+            "functions": {
+                "read": {
+                    "type": "forward",
+                    "function": "read",
+                    "parameters": ["location"],
+                    "pass_parameters": {
+                        "return_val": "return_val",
+                        "target":  "self",
+                        "location": "$location"
+                    }
+                },
+                "write": {
+                    "type": "forward",
+                    "function": "write",
+                    "parameters": ["location", "value"],
+                    "pass_parameters": {
+                        "value": "$value",
+                        "target":  "self",
+                        "location": "$location"
+                    }
+                }
+            }
+        },
+        "bank:block": {
+            "functions": {
+                "read": {
+                    "type": "forward",
+                    "function": "read",
+                    "parameters": ["location"],
+                    "pass_parameters": {
+                        "return_val": "return_val",
+                        "target":  "self",
+                        "location": "$location"
+                    }
+                },
+                "write": {
+                    "type": "forward",
+                    "function": "write",
+                    "parameters": ["value", "location"],
+                    "pass_parameters": {
+                        "value": "$value",
+                        "target":  "self",
+                        "location": "$location"
+                    }
+                }
+            }
+        }
+    },
+    "functions": {
+        "printnow": {
+            "type": "function",
+            "code": "print $0\nprintflush $1",
+            "parameters": ["text", "target"]
+        },
+        "print": {
+            "type": "function",
+            "code": "print $0",
+            "parameters": ["text"]
+        },
+        "printflush": {
+            "type": "function",
+            "code": "printflush $0",
+            "parameters": ["target"]
+        },
+        "write": {
+            "type": "function",
+            "code": "write $0 $1 $2",
+            "parameters": ["value", "target", "location"]
+        },
+        "read": {
+            "type": "function",
+            "code": "read $0 $1 $2",
+            "parameters": ["return_val", "target", "location"]
+        },
+        "sensor": {
+            "type": "function",
+            "code": "sensor $0 $1 @$2",
+            "parameters": ["return_val", "target", "value"]
+        },
+        "opperation": {
+            "type": "function",
+            "code": "op $0 $1 $2 $3",
+            "parameters": ["opperation", "return_val", "value1", "value2"]
+        },
+        "exec": {
+            "type": "function",
+            "code": "$:0",
+            "parameters": ["cmd"]
+        }
+    }
+}

@@ -58,16 +58,16 @@ evaluation: [ "(" ] obj eval obj [ ")" ] | evaluation gate evaluation
 opperation: [ "(" ] obj opperator obj [ ")" ]
 
 // return
-return_obj: (value | evaluation | opperation | class_variable_call | class_function_call | function_call)
-return: "return" return_obj
+return_obj: ( evaluation | opperation | class_variable_call | class_function_call | function_call)
+return: "return" obj
 
 // set
-set: variable "=" return_obj
+set: variable "=" obj
 
 // code
 line: 
        | set LINE_SEPERATOR
-       | game_obj_def LINE_SEPERATOR
+       | game_obj_set LINE_SEPERATOR
        | function_call LINE_SEPERATOR
        | function_def [ LINE_SEPERATOR ]
        | class_function_call LINE_SEPERATOR
@@ -78,7 +78,8 @@ code: line+
 code_block: "{" code "}"
 
 // functions
-parameter_list: (return_obj ("," return_obj)*)?
+parameter: [ variable "=" ] obj
+parameter_list: (parameter ("," parameter)*)?
 function_def: "fn" variable "(" parameter_list ")" code_block
 function_call: variable "(" parameter_list ")"
 
@@ -87,6 +88,6 @@ class_function_call: variable "." function_call
 class_variable_call: variable "." variable
 
 // game obj
-game_obj_def: "%DEFINE" set
+game_obj_set: "%DEFINE" set
 
 start: code

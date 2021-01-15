@@ -1,170 +1,57 @@
-from .file import File
 from .function_lib import FunctionLib
-from.lark_loader import load_lark_tree
+from .lark_loader import load_lark_tree
+from .exceptions import CompileError
+from .tree_compiler import TreeCompiler
+from string import ascii_letters
 
 
 class Compiler:
     def __init__(self, file_name):
-        self.file = File(file_name)
+        self.file_name = file_name
 
     def start(self):
-        self.function_lib = FunctionLib()
+        self.function_lib = FunctionLib(self)
+        self.tree_compiler = TreeCompiler(self)
         self.included_functions = []
-        self.game_objects = {}
+        self.classes = {}
+        self.return_value = []
 
     def load_tree(self):
-        self.tree = load_lark_tree(self.file.name)
+        self.tree = load_lark_tree(self.file_name)
 
-    def compile_return_obj(self, tree, num=0):
-        parameter_calculations = []
-        code = ""
+    def compile_line(self, line):
+        machine_line = ""
+        # get the thing the line is acctually about
+        line = line.children[0]
+        line_type = line.data  # for readabillity
 
-        if tree.data == 'class_function_call':
-            # get target class
-            target = tree.children[0]
-            target = self.game_objects[target]
+        if line_type == "class_function_call":
+            machine_line = self.tree_compiler.compile_class_function_call(line)
+        elif line_type == "function_call":
+            machine_line = self.tree_compiler.compile_function_call(line)
+        elif line_type == "game_obj_set":
+            set_statement = line.children[0]
+            variable_name, value = self.tree_compiler.compile_set(set_statement)
+            self.classes[variable_name] = {
+                "name": value,
+                "type": "".join([i for i in value if i in ascii_letters])
+            }
+        elif line_type == "set":
+            variable_name, value = self.tree_compiler.compile_set(line)
+            machine_line = f"set {variable_name} {value}"
 
-            # get function information
-            function_call = tree.children[1]
-            function_name = function_call.children[0]
+        return machine_line
 
-            if function_name == "print":
-                function_name = "printnow"
+    def compile_code(self, code):
+        script = ""
 
-            parameter_list_obj = function_call.children[1]
-            parameter_list = []
+        # compile all lines
+        for child in code.children:
+            self.tree_compiler.reset()
+            code = self.compile_line(child)
+            script += "\n".join(self.tree_compiler.pre_code) + "\n" + code + "\n"
 
-            for p in parameter_list_obj.children:
-                num += 1
-                pc, c = self.compile_return_obj(p.children[0], num=num)
-                parameter_calculations.append(pc)
-                parameter_list.append(c)
-
-            parameter_calculations.append(self.function_lib.build_function(
-                function_name,
-                *parameter_list,
-                target=target
-            ))
-            parameter_calculations.append(
-                f"set mdsc_return_value{num} mdsc_return_value"
-            )
-            code = f"mdsc_return_value{num}"
-        elif tree.data == 'class_variable_call':
-            # get target class
-            target = tree.children[0]
-            target = self.game_objects[target]
-
-            parameter_calculations.append(self.function_lib.build_function(
-                'sensor',
-                target=target,
-                value=tree.children[1]
-            ))
-
-            parameter_calculations.append(
-                f"set mdsc_return_value{num} mdsc_return_value"
-            )
-            code = f"mdsc_return_value{num}"
-        elif tree.data == "function_call":
-            # get function information
-            function_call = tree
-            function_name = function_call.children[0]
-
-            parameter_list_obj = function_call.children[1]
-            parameter_list = []
-
-            for p in parameter_list_obj.children:
-                num += 1
-                pc, c = self.compile_return_obj(p.children[0], num=num)
-                parameter_calculations.append(pc)
-                parameter_list.append(c)
-
-            if function_name == "exec":
-                for char in ["'", '"']:
-                    if parameter_list[0].startswith('"'):
-                        parameter_list[0] = parameter_list[0][1:][:-1]
-
-            parameter_calculations.append(self.function_lib.build_function(
-                function_name,
-                *parameter_list
-            ))
-            parameter_calculations.append(
-                f"set mdsc_return_value{num} mdsc_return_value"
-            )
-            code = f"mdsc_return_value{num}"
-        elif tree.data == 'value':
-            code = tree.children[0]
-        elif tree.data == 'return_obj' or tree.data == 'obj':
-            pc, c = self.compile_return_obj(
-                tree.children[0], num=num+1
-            )
-            parameter_calculations, code = [pc], c
-        elif tree.data == 'opperation':
-            opperator = {
-                "+": "add",
-                "-": "sub",
-                "*": "mul",
-                "/": "div",
-                "//": "idiv",
-                "%": "mod",
-                "**": "pow"
-            }[tree.children[1].children[0]]
-
-            values = []
-            for value in [tree.children[0], tree.children[2]]:
-                num += 1
-                pc, c = self.compile_return_obj(value, num)
-                parameter_calculations.append(pc)
-                values.append(c)
-
-            parameter_calculations.append(self.function_lib.build_function(
-                "opperation",
-                op=opperator,
-                *values
-            ))
-
-            parameter_calculations.append(
-                f"set mdsc_return_value{num} mdsc_return_value"
-            )
-            code = f"mdsc_return_value{num}"
-        else:
-            print(f"UNKNOWN TREE: {tree}")
-
-        return "\n".join([
-            str(i) for i in parameter_calculations]), code
-
-    def compile_code(self, tree):
-        code = ""
-
-        for line in tree.children:
-            new_code = ""
-            line_action = line.children[0]
-            # print(line_action)
-
-            # load %DEFINE objects
-            if line_action.data == 'game_obj_def':
-                set_obj = line_action.children[0]
-                obj_name = set_obj.children[0]
-                in_game_name = set_obj.children[1].children[0].children[0]
-                self.game_objects[obj_name] = in_game_name
-            # msg_block.print() functionallity
-            elif line_action.data == 'class_function_call':
-                pc, c = self.compile_return_obj(line_action)
-                new_code = pc + new_code
-            # var = <something>;
-            elif line_action.data == 'set':
-                var_name = line_action.children[0]
-                pc, c = self.compile_return_obj(line_action.children[1])
-                new_code = pc + new_code + f"\nset {var_name} {c}\n"
-            elif line_action.data == "function_call":
-                pc, c = self.compile_return_obj(line_action)
-                new_code = new_code + pc
-
-            code += new_code
-
-        while "\n\n" in code:
-            code = code.replace("\n\n", "\n")
-
-        return code
+        return script.replace("\n\n", "\n")
 
     def compile(self):
         self.start()
@@ -174,4 +61,4 @@ class Compiler:
         first_code_block = self.tree.children[0]
         code = self.compile_code(first_code_block)
 
-        return code
+        return code.strip()
