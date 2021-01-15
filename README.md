@@ -70,6 +70,24 @@ exec("set x 10"); // will set the variable x to the value 10
 If I have enough motivation this will be the order in which I will add functionality. If I don't have enough motivation this project will prob come to a halt, before the all the items have been added.
 
 - [ ] Add all mindustry functionality
+    - [X] Read
+    - [X] Write
+    - [ ] Draw
+    - [X] Print
+    - [ ] Draw Flush
+    - [X] Print Flush
+    - [ ] Get Link
+    - [ ] Control
+    - [ ] Rader
+    - [X] Sensor
+    - [X] Set
+    - [X] Operation
+    - [ ] End
+    - [ ] Jump
+    - [ ] Unit Bind
+    - [ ] Unit Control
+    - [ ] Unit Radar
+    - [ ] Unit Locate
 - [ ] if statements
 - [ ] Add custom function defining
 - [ ] Different data types
